@@ -14,6 +14,10 @@ const config = {
       endDate: new Date(),
     },
   },
+  youtube: {
+    apiKey: process.env.YOUTUBE_API_KEY,
+    channelId: process.env.YOUTUBE_CHANNEL_ID,
+  },
 }
 
 export default config
