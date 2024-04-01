@@ -1,20 +1,37 @@
-import dotenv from 'dotenv'
+import axios from 'axios'
+import config from './config.js'
 
-import { ApiClient } from 'twitch'
-import { StaticAuthProvider } from 'twitch-auth'
+async function getTopClipsOfTheWeek() {
+  const {
+    twitch: { clientId, accessToken, clipSettings },
+  } = config
+  const { count, cateogryId, startDate, endDate } = clipSettings
 
-const env = dotenv.config({ path: '../.env' }).parsed
+  const startDateString = startDate.toISOString().split('T')[0]
+  const endDateString = endDate.toISOString().split('T')[0]
 
-const clientId = env.TWITCH_CLIENT_ID
-const accessToken = env.TWITCH_ACCESS_TOKEN
-const authProvider = new StaticAuthProvider(clientId, accessToken)
-const apiClient = new ApiClient({ authProvider })
-const game = await apiClient.helix.games.getGameByName('Just Chatting')
+  const params = {
+    game_id: cateogryId,
+    first: count,
+    started_at: `${startDateString}T00:00:00Z`,
+    ended_at: `${endDateString}T23:59:59Z`,
+  }
 
-async function getGameClips(gameId) {
-  return await apiClient.helix.clips.getClipsForGame(gameId)
+  const url = 'https://api.twitch.tv/helix/clips'
+  const response = await axios.get(url, {
+    headers: {
+      'CLIENT-ID': clientId,
+      Authorization: `Bearer ${accessToken}`,
+    },
+    params,
+  })
+
+  return response.data
 }
 
-getGameClips(game.id).then((data) => {
-  console.log(data)
-})
+;(async () => {
+  const topClips = await getTopClipsOfTheWeek()
+  console.log('Top clips of the week:', topClips)
+})()
+
+export default getTopClipsOfTheWeek
