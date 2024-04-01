@@ -5,13 +5,13 @@ async function getTopClipsOfTheWeek() {
   const {
     twitch: { clientId, accessToken, clipSettings },
   } = config
-  const { count, cateogryId, startDate, endDate } = clipSettings
+  const { count, category, startDate, endDate } = clipSettings
 
   const startDateString = startDate.toISOString().split('T')[0]
   const endDateString = endDate.toISOString().split('T')[0]
 
   const params = {
-    game_id: cateogryId,
+    game_id: category.id,
     first: count,
     started_at: `${startDateString}T00:00:00Z`,
     ended_at: `${endDateString}T23:59:59Z`,

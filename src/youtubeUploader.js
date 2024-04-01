@@ -5,9 +5,9 @@ import { google } from 'googleapis'
 
 const YOUTUBE_API_VERSION = 'v3'
 
-async function uploadVideoToYoutube(videoFilePath) {
+async function uploadVideoToYoutube(videoFilePath, categoryName) {
   const {
-    youtube: { apiKey, channelId },
+    youtube: { apiKey, channelId, videoCounters },
   } = config
 
   const youtube = google.youtube({
@@ -17,9 +17,15 @@ async function uploadVideoToYoutube(videoFilePath) {
 
   const videoPath = path.resolve(videoFilePath)
 
+  //Increment video counter for category
+  config.youtube.videoCounters[categoryName] =
+    (config.youtube.videoCounters[categoryName] || 0) + 1
+
+  const videoCounter = config.youtube.videoCounters[categoryName]
+
   const videoMetadata = {
     snippet: {
-      title: 'Top Twitch Clips of the Week',
+      title: `Top Twitch Clips of the Week - ${categoryName} #${videoCounter}`,
       description: 'A compilation of the top clips from Twitch this week.',
     },
     status: {
