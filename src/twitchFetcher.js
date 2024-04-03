@@ -31,7 +31,7 @@ async function getTopClipsOfTheWeek() {
 
 ;(async () => {
   const topClips = await getTopClipsOfTheWeek()
-  console.log('Top clips of the week:', topClips)
+  //console.log('Top clips of the week:', topClips)
 })()
 
 export default getTopClipsOfTheWeek
