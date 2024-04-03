@@ -7,7 +7,7 @@ const config = {
     clientId: process.env.TWITCH_CLIENT_ID,
     accessToken: process.env.TWITCH_ACCESS_TOKEN,
     clipSettings: {
-      count: 20,
+      count: 5, // to change the amount of clips the API is getting
       category: {
         id: '509658',
         name: 'Just Chatting',
