@@ -13,7 +13,7 @@ async function runApp() {
   const clips = await getTopClipsOfTheWeek()
   const outputVideoPath = await createVideoFromClips(clips)
   const categoryName = category.name
-  await uploadVideoToYoutube(outputVideoPath, categoryName)
+  uploadVideoToYoutube(outputVideoPath, categoryName)
 }
 
 runApp()
