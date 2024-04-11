@@ -4,6 +4,7 @@ import fs from 'fs'
 import axios from 'axios'
 
 async function createVideoFromClips(clips) {
+  console.log('Creating video...')
   const { data } = clips
 
   const tempDir = path.join(process.cwd(), 'temp')

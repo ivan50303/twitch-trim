@@ -2,6 +2,7 @@ import axios from 'axios'
 import config from './config.js'
 
 async function getTopClipsOfTheWeek() {
+  console.log('Gathering clips...')
   const {
     twitch: { clientId, accessToken, clipSettings },
   } = config
@@ -28,10 +29,5 @@ async function getTopClipsOfTheWeek() {
 
   return response.data
 }
-
-;(async () => {
-  const topClips = await getTopClipsOfTheWeek()
-  //console.log('Top clips of the week:', topClips)
-})()
 
 export default getTopClipsOfTheWeek

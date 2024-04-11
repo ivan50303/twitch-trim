@@ -7,7 +7,7 @@ const config = {
     clientId: process.env.TWITCH_CLIENT_ID,
     accessToken: process.env.TWITCH_ACCESS_TOKEN,
     clipSettings: {
-      count: 5, // to change the amount of clips the API is getting
+      count: 5,
       category: {
         id: '509658',
         name: 'Just Chatting',
@@ -18,8 +18,6 @@ const config = {
     },
   },
   youtube: {
-    apiKey: process.env.YOUTUBE_API_KEY,
-    channelId: process.env.YOUTUBE_CHANNEL_ID,
     videoCounters: {
       'Just Chatting': 0,
     },
