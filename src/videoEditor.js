@@ -2,12 +2,8 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
-import { pipeline } from 'stream';
- 
-//for the time being make sure this is your file path to ffmpeg.exe
-//use process.env.LOCALAPPDATA to shorten the path and protects your user path
-async function createVideoFromClips(clips) {
 
+async function createVideoFromClips(clips) {
     // Extracting the data array form the clips response from the twitch API call
     const { data } = clips;
     // Create a temporary directory to store the clips
@@ -63,39 +59,37 @@ async function createVideoFromClips(clips) {
 
 async function downloadAndSaveClips(data, tempDir) {
     const clipPaths = [];
-  
-    for (const clip of data) {
-        
-        const clipUrl = clip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
-        const clipFileName = `${clip.id}.mp4`;
-        const clipFilePath = path.join(tempDir, clipFileName);
-    
-        try {
-            const response = await axios({
-            method: 'get',
-            url: clipUrl,
-            responseType: 'stream',
-            });
+  for (const clip of data) {
+    const clipUrl = clip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
+    const clipFileName = `${clip.id}.mp4`;
+    const clipFilePath = path.join(tempDir, clipFileName);
+
+    try {
+      const response = await axios({
+        method: 'get',
+        url: clipUrl,
+        responseType: 'stream',
+      });
 
             const outputStream = fs.createWriteStream(clipFilePath);
             response.data.pipe(outputStream);
 
-            await new Promise((resolve, reject) => {
-                outputStream.on('finish', () =>{
-                    clipPaths.push(clipFilePath);
-                    resolve();
-                });
-                outputStream.on('error', reject);
-            });
-    
-        } catch (error) {
-            console.log(error);
-            console.error(Error `downloading clip ${clip.id}: ${error.message}`);
-            throw error;
-        }
+      await new Promise((resolve, reject) => {
+        outputStream.on('finish', () => {
+          clipPaths.push(clipFilePath);
+          resolve();
+        })
+        outputStream.on('error', reject);
+      });
+
+    } catch (error) {
+      console.log(error);
+      console.error(Error`downloading clip ${clip.id}: ${error.message}`);
+      throw error;
     }
-  
-    return clipPaths;
+  }
+
+  return clipPaths;
 }
 
 export default createVideoFromClips
