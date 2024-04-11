@@ -3,33 +3,51 @@ import path from 'path';
 import fs from 'fs';
 import axios from 'axios';
 import { pipeline } from 'stream';
-
-const ffmpegPath = `${process.env.LOCALAPPDATA}\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-6.1.1-full_build\\bin\\ffmpeg.exe`; 
+ 
 //for the time being make sure this is your file path to ffmpeg.exe
 //use process.env.LOCALAPPDATA to shorten the path and protects your user path
 async function createVideoFromClips(clips) {
 
     // Extracting the data array form the clips response from the twitch API call
     const { data } = clips;
-    console.log(data);
     // Create a temporary directory to store the clips
     const tempDir = path.join(process.cwd(), 'temp');
     fs.mkdirSync(tempDir, { recursive: true });
 
-    const clipPaths = await downloadAndSaveClips(data, tempDir);
-
-    const inputFileList = clipPaths.map((clipPath) => {
-        return `file '${clipPath}'`;
-    }).join('\n');
+    fs.readdirSync(tempDir).forEach((file) => {
+        const filePath = path.join(tempDir, file);
+        if (fs.lstatSync(filePath).isDirectory()) {
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(filePath);
+        }
+      });
 
     const inputFileListPath = path.join(tempDir, 'input_file_list.txt');
-    fs.writeFileSync(inputFileListPath, inputFileList);
+    fs.closeSync(fs.openSync(inputFileListPath, 'w'));
 
+    const clipPaths = await downloadAndSaveClips(data, tempDir);
+    const inputFileListStats = fs.statSync(inputFileListPath);
+    const hasInputContent = inputFileListStats.size > 0;
+    
+    let inputFileList;
+    if(hasInputContent){
+        fs.truncateSync(inputFileListPath)
+    } else {
+        inputFileList = clipPaths.map((clipPath) => {
+            return `file '${clipPath}'`;
+        }).join('\n');
+        fs.writeFileSync(inputFileListPath, inputFileList);
+    }
+    
     const outputVideoPath = path.join(tempDir, 'output_video.mp4');
+    if (fs.existsSync(outputVideoPath)) {
+        fs.unlinkSync(outputVideoPath);
+    }
 
+    const ffmpegPath = process.env.FFMPEG_EXE_PATH;
     // Create the FFmpeg command
     const ffmpegCommand = `${ffmpegPath} -f concat -safe 0 -i ${inputFileListPath} -c copy ${outputVideoPath}`;
-    console.log(ffmpegCommand);
     return new Promise((resolve, reject) => {
         const ffmpegProcess = spawn(ffmpegCommand, { shell: true });
 
@@ -41,7 +59,6 @@ async function createVideoFromClips(clips) {
         }
         });
     });
-
 }
 
 async function downloadAndSaveClips(data, tempDir) {
@@ -50,9 +67,7 @@ async function downloadAndSaveClips(data, tempDir) {
     for (const clip of data) {
         
         const clipUrl = clip.thumbnail_url.replace('-preview-480x272.jpg', '.mp4');
-        console.log(clipUrl);
         const clipFileName = `${clip.id}.mp4`;
-        console.log(clipFileName);
         const clipFilePath = path.join(tempDir, clipFileName);
     
         try {
