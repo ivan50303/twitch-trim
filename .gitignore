@@ -1,6 +1,7 @@
 .env
 node_modules
-/src/temp/*.mp4
-/src/temp/*.txt
+temp/*.mp4
+temp/*.txt
+/.next/
 credentials.json
 token.json
