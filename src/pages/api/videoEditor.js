@@ -3,9 +3,27 @@ import path from 'path'
 import fs from 'fs'
 import axios from 'axios'
 
-async function createVideoFromClips(clips) {
-  console.log('Creating video...')
+export default async function handler(req, res) {
+  try {
+    const clips = req.body
 
+    console.log('Creating video...')
+
+    const { data } = clips
+    const tempDir = path.join(process.cwd(), 'temp')
+
+    // ... (your existing videoEditor logic)
+
+    const outputVideoPath = await createVideoFromClips(data, tempDir)
+
+    res.status(200).json({ videoPath: outputVideoPath })
+  } catch (error) {
+    console.error('Error creating video:', error)
+    res.status(500).json({ error: 'Failed to create video' })
+  }
+}
+
+async function createVideoFromClips(clips) {
   const { data } = clips
   const tempDir = path.join(process.cwd(), 'temp')
   fs.mkdirSync(tempDir, { recursive: true })
@@ -91,5 +109,3 @@ async function downloadAndSaveClips(data, tempDir) {
 
   return clipPaths
 }
-
-export default createVideoFromClips
