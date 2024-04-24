@@ -19,6 +19,7 @@ const GenerateButton = () => {
         },
         body: JSON.stringify({ data: twitchClips }),
       })
+      
       const { videoPath } = await editedVideoResponse.json()
 
       // Upload the video to YouTube

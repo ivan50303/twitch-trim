@@ -7,7 +7,7 @@ const config = {
     clientId: process.env.TWITCH_CLIENT_ID,
     accessToken: process.env.TWITCH_ACCESS_TOKEN,
     clipSettings: {
-      count: 5,
+      count: 2,
       category: {
         id: '509658',
         name: 'Just Chatting',
@@ -18,9 +18,7 @@ const config = {
     },
   },
   youtube: {
-    videoCounters: {
-      'Just Chatting': 0,
-    },
+  
   },
 }
 

@@ -6,15 +6,11 @@ import axios from 'axios'
 export default async function handler(req, res) {
   try {
     const clips = req.body
-
+    const { data } = clips
+    
     console.log('Creating video...')
 
-    const { data } = clips
-    const tempDir = path.join(process.cwd(), 'temp')
-
-    // ... (your existing videoEditor logic)
-
-    const outputVideoPath = await createVideoFromClips(data, tempDir)
+    const outputVideoPath = await createVideoFromClips(data)
 
     res.status(200).json({ videoPath: outputVideoPath })
   } catch (error) {
@@ -63,15 +59,31 @@ async function createVideoFromClips(clips) {
 
   const ffmpegPath = process.env.FFMPEG_EXE_PATH
   const ffmpegCommand = `${ffmpegPath} -f concat -safe 0 -i ${inputFileListPath} -c copy ${outputVideoPath}`
+  
   return new Promise((resolve, reject) => {
     const ffmpegProcess = spawn(ffmpegCommand, { shell: true })
+    
+    let stdoutData = '';
+    let stderrData = '';
+
+    ffmpegProcess.stdout.on('data', (data) => {
+      stdoutData += data.toString();
+    });
+
+    ffmpegProcess.stderr.on('data', (data) => {
+      stderrData += data.toString();
+    });
+
     ffmpegProcess.on('close', (code) => {
       if (code === 0) {
-        resolve(outputVideoPath)
+        console.log('FFmpeg stdout:', stdoutData);
+        resolve(outputVideoPath);
       } else {
-        reject(new Error(`FFmpeg process exited with code ${code}`))
+        const error = new Error(`FFmpeg process exited with code ${code}\n${stderrData}`);
+        console.error(error);
+        reject(error);
       }
-    })
+    });
   })
 }
 
