@@ -1,21 +1,27 @@
 {
-  "name": "src",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "name": "twitchtrim",
+  "version": "0.1.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "axios": "^1.6.8",
-    "google-auth-library": "^9.7.0",
+    "dotenv": "^16.4.5",
+    "google-auth-library": "^9.8.0",
     "googleapis": "^134.0.0",
-    "twitch": "^4.6.7"
+    "next": "14.2.1",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "dotenv": "^16.4.5"
+    "eslint": "^8",
+    "eslint-config-next": "14.2.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1"
   }
 }

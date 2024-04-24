@@ -1,6 +1,13 @@
-.env
-node_modules
-/src/temp/*.mp4
-/src/temp/*.txt
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+
+/node_modules
+/.next/
+
+temp/*.mp4
+temp/*.txt
+
 credentials.json
 token.json
+
+.env

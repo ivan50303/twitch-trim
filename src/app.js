@@ -11,6 +11,8 @@ async function runApp() {
   } = config
 
   const clips = await getTopClipsOfTheWeek()
+
+  console.log('done')
   const outputVideoPath = await createVideoFromClips(clips)
   const categoryName = category.name
   uploadVideoToYoutube(outputVideoPath, categoryName)
