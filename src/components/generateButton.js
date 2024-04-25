@@ -1,14 +1,35 @@
 import { useState } from 'react'
+import gameInfo from '../../public/game_info.json' assert { type: 'json' }
 
-const GenerateButton = () => {
+const GenerateButton = ({ twitchCategory, clipCount }) => {
   const [isGenerating, setIsGenerating] = useState(false)
+
+  const getCategoryId = (categoryName) => {
+    const category = gameInfo.find(
+      (game) => game.name.toLowerCase() === categoryName.toLowerCase().trim()
+    )
+    return category ? category.id : null
+  }
 
   const handleGenerate = async () => {
     setIsGenerating(true)
 
     try {
+      const categoryId = getCategoryId(twitchCategory)
+      console.log(categoryId)
+      if (!categoryId) {
+        console.error('Invalid Twitch category')
+        return
+      }
+
       // Fetch clips from Twitch
-      const twitchClipsResponse = await fetch('/api/twitchFetcher')
+      const twitchClipsResponse = await fetch('/api/twitchFetcher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ categoryId, clipCount }),
+      })
       const twitchClips = await twitchClipsResponse.json()
 
       // Edit the clips into a video
@@ -19,11 +40,10 @@ const GenerateButton = () => {
         },
         body: JSON.stringify({ data: twitchClips }),
       })
-      
       const { videoPath } = await editedVideoResponse.json()
 
       // Upload the video to YouTube
-      const categoryName = 'your_category_name' // Replace with your category name
+      const categoryName = 'category_name' // Replace with category name
       const uploadResponse = await fetch('/api/youtubeUploader', {
         method: 'POST',
         headers: {

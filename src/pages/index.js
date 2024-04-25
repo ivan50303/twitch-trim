@@ -19,6 +19,7 @@ const HomePage = () => {
   const handleUploadToYoutubeChange = () => {
     setUploadToYoutube(!uploadToYoutube)
   }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-8">TwitchTrim</h1>
@@ -50,7 +51,7 @@ const HomePage = () => {
       </div>
 
       <div className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-8">
-        <GenerateButton />
+        <GenerateButton twitchCategory={twitchCategory} clipCount={clipCount} />
       </div>
 
       <div className="w-3/4 mb-8">

@@ -3,6 +3,8 @@ import config from '../../../config'
 
 export default async function handler(req, res) {
   try {
+    const { categoryId, clipCount } = req.body
+
     console.log('Gathering clips...')
 
     const {
@@ -15,8 +17,8 @@ export default async function handler(req, res) {
     const endDateString = endDate.toISOString().split('T')[0]
 
     const params = {
-      game_id: category.id,
-      first: count,
+      game_id: categoryId,
+      first: clipCount,
       started_at: `${startDateString}T00:00:00Z`,
       ended_at: `${endDateString}T23:59:59Z`,
     }
