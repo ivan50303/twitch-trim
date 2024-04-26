@@ -1,4 +1,5 @@
 import GenerateButton from '@/components/generateButton'
+import VideoPlayer from '@/components/videoPlayer'
 import '../app/globals.css'
 import { useState } from 'react'
 
@@ -6,6 +7,8 @@ const HomePage = () => {
   const [twitchCategory, setTwitchCategory] = useState('')
   const [clipCount, setClipCount] = useState('')
   const [uploadToYoutube, setUploadToYoutube] = useState(false)
+  const [videoSource, setVideoSource] = useState(null)
+  const [videoPath, setVideoPath] = useState(null)
 
   const handleTwitchCategoryChange = (e) => {
     setTwitchCategory(e.target.value)
@@ -20,10 +23,17 @@ const HomePage = () => {
     setUploadToYoutube(!uploadToYoutube)
   }
 
+  const handleVideoGenerated = (videoUrl, videoPath) => {
+    setVideoSource(videoUrl)
+    setVideoPath(videoPath)
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-8">TwitchTrim</h1>
-      <div className="w-1/2 h-96 bg-black mb-8"></div>
+      <div className="mb-8">
+        <VideoPlayer videoSource={videoSource} />
+      </div>
       <input
         type="text"
         placeholder="Twitch Category"
@@ -55,6 +65,7 @@ const HomePage = () => {
           twitchCategory={twitchCategory}
           clipCount={clipCount}
           uploadToYoutube={uploadToYoutube}
+          onVideoGenerated={handleVideoGenerated}
         />
       </div>
 

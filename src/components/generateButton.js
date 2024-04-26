@@ -1,8 +1,14 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import gameInfo from '../../public/game_info.json' assert { type: 'json' }
 
-const GenerateButton = ({ twitchCategory, clipCount, uploadToYoutube }) => {
+const GenerateButton = ({
+  twitchCategory,
+  clipCount,
+  uploadToYoutube,
+  onVideoGenerated,
+}) => {
   const [isGenerating, setIsGenerating] = useState(false)
+  const videoPlayerRef = useRef(null)
 
   const getCategoryId = (categoryName) => {
     const category = gameInfo.find(
@@ -40,7 +46,22 @@ const GenerateButton = ({ twitchCategory, clipCount, uploadToYoutube }) => {
         },
         body: JSON.stringify({ data: twitchClips }),
       })
-      const { videoPath } = await editedVideoResponse.json()
+
+      // Get the generated video file
+      const videoBlob = await editedVideoResponse.blob()
+      const videoUrl = URL.createObjectURL(videoBlob)
+
+      // Set the video source for the video player
+      // if (videoPlayerRef.current) {
+      //   videoPlayerRef.current.src = videoUrl
+      // }
+
+      // Get the videoPath from the response headers
+      const videoPath = editedVideoResponse.headers.get('X-Video-Path')
+
+      onVideoGenerated(videoUrl, videoPath)
+
+      // const { videoPath } = await editedVideoResponse.json()
 
       // Upload the video to YouTube
       // const categoryName = 'category_name' // Replace with category name

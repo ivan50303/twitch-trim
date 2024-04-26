@@ -7,16 +7,32 @@ export default async function handler(req, res) {
   try {
     const clips = req.body
     const { data } = clips
-    
+
     console.log('Creating video...')
 
     const outputVideoPath = await createVideoFromClips(data)
 
-    res.status(200).json({ videoPath: outputVideoPath })
+    // Set response headers
+    res.setHeader('Content-Type', 'video/mp4')
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${path.basename(outputVideoPath)}"`
+    )
+    res.setHeader('X-Video-Path', outputVideoPath) // include videoPath in response headers
+
+    const videoStream = fs.createReadStream(outputVideoPath)
+
+    // Pipe the video stream to the response
+    videoStream.pipe(res)
   } catch (error) {
     console.error('Error creating video:', error)
     res.status(500).json({ error: 'Failed to create video' })
   }
+  //   res.status(200).json({ videoPath: outputVideoPath })
+  // } catch (error) {
+  //   console.error('Error creating video:', error)
+  //   res.status(500).json({ error: 'Failed to create video' })
+  // }
 }
 
 async function createVideoFromClips(clips) {
@@ -59,31 +75,33 @@ async function createVideoFromClips(clips) {
 
   const ffmpegPath = process.env.FFMPEG_EXE_PATH
   const ffmpegCommand = `${ffmpegPath} -f concat -safe 0 -i ${inputFileListPath} -c copy ${outputVideoPath}`
-  
+
   return new Promise((resolve, reject) => {
     const ffmpegProcess = spawn(ffmpegCommand, { shell: true })
-    
-    let stdoutData = '';
-    let stderrData = '';
+
+    let stdoutData = ''
+    let stderrData = ''
 
     ffmpegProcess.stdout.on('data', (data) => {
-      stdoutData += data.toString();
-    });
+      stdoutData += data.toString()
+    })
 
     ffmpegProcess.stderr.on('data', (data) => {
-      stderrData += data.toString();
-    });
+      stderrData += data.toString()
+    })
 
     ffmpegProcess.on('close', (code) => {
       if (code === 0) {
-        console.log('FFmpeg stdout:', stdoutData);
-        resolve(outputVideoPath);
+        console.log('FFmpeg stdout:', stdoutData)
+        resolve(outputVideoPath)
       } else {
-        const error = new Error(`FFmpeg process exited with code ${code}\n${stderrData}`);
-        console.error(error);
-        reject(error);
+        const error = new Error(
+          `FFmpeg process exited with code ${code}\n${stderrData}`
+        )
+        console.error(error)
+        reject(error)
       }
-    });
+    })
   })
 }
 
