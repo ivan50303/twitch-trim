@@ -51,7 +51,11 @@ const HomePage = () => {
       </div>
 
       <div className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-8">
-        <GenerateButton twitchCategory={twitchCategory} clipCount={clipCount} />
+        <GenerateButton
+          twitchCategory={twitchCategory}
+          clipCount={clipCount}
+          uploadToYoutube={uploadToYoutube}
+        />
       </div>
 
       <div className="w-3/4 mb-8">

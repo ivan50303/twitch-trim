@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import gameInfo from '../../public/game_info.json' assert { type: 'json' }
 
-const GenerateButton = ({ twitchCategory, clipCount }) => {
+const GenerateButton = ({ twitchCategory, clipCount, uploadToYoutube }) => {
   const [isGenerating, setIsGenerating] = useState(false)
 
   const getCategoryId = (categoryName) => {
@@ -43,19 +43,35 @@ const GenerateButton = ({ twitchCategory, clipCount }) => {
       const { videoPath } = await editedVideoResponse.json()
 
       // Upload the video to YouTube
-      const categoryName = 'category_name' // Replace with category name
-      const uploadResponse = await fetch('/api/youtubeUploader', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ videoPath, categoryName }),
-      })
+      // const categoryName = 'category_name' // Replace with category name
+      // const uploadResponse = await fetch('/api/youtubeUploader', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ videoPath, categoryName }),
+      // })
 
-      if (uploadResponse.ok) {
-        console.log('Video uploaded successfully!')
-      } else {
-        console.error('Error uploading video')
+      // if (uploadResponse.ok) {
+      //   console.log('Video uploaded successfully!')
+      // } else {
+      //   console.error('Error uploading video')
+      // }
+      if (uploadToYoutube) {
+        const categoryName = 'category_name' // Replace with category name
+        const uploadResponse = await fetch('/api/youtubeUploader', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ videoPath, categoryName }),
+        })
+
+        if (uploadResponse.ok) {
+          console.log('Video uploaded successfully!')
+        } else {
+          console.error('Error uploading video')
+        }
       }
     } catch (error) {
       console.error('Error generating video:', error)
