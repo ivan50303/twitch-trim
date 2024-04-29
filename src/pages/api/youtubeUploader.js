@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     console.log('Uploading video to YouTube...')
 
     const oauth2Client = await getOAuth2Client()
-    console.log(oauth2Client)
+    // console.log(oauth2Client)
     // oauth2Client.setCredentials({access_token: accessToken})
     const youtube = google.youtube({
       version: YOUTUBE_API_VERSION,

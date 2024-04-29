@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
 const YouTubeUploadButton = ({ videoPath }) => {
   console.log('button rendered')
   const [authorizationUrl, setAuthorizationUrl] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+  const [hasAccessToken, setHasAccessToken] = useState(false);
+  console.log("hasAccessToken is: " + hasAccessToken)
+        console.log('returned auth url is : ' + authorizationUrl)
 
   useEffect(() => {
     const fetchAuthorizationUrl = async () => {
       try {
         console.log('fetching auth url')
-        const response = await axios.get('/api/getAuthorizationUrl');
-        setAuthorizationUrl(response.data.authorizationUrl);
+        const response = await axios.get('/api/checkAccessToken');
+        console.log(response)
+        setHasAccessToken(response.data.hasAccessToken)
+        setAuthorizationUrl(response.data.authorizationUrl)
+        // console.log("hasAccessToken is: " + hasAccessToken)
+        // console.log('returned auth url is : ' + authorizationUrl)
+        console.log('')
       } catch (error) {
         console.error('Error fetching authorization URL:', error);
       }
@@ -21,14 +29,14 @@ const YouTubeUploadButton = ({ videoPath }) => {
   }, []);
 
   useEffect(() => {
-    console.log('url changed')
+    console.log('useeffect run')
     const fetchAccessToken = async (authorizationCode) => {
       try {
-        console.log('fetching access token')
-        const response = await axios.post('/api/getAccessToken', { code: authorizationCode });
-        setAccessToken(response.data.access_token);
+        console.log('storing access token')
+        await axios.post('/api/storeAccessToken', { code: authorizationCode });
+        // setAccessToken(response.data.access_token);
       } catch (error) {
-        console.error('Error fetching access token:', error);
+        console.error('Error storing access token:', error);
       }
     };
 
@@ -42,30 +50,29 @@ const YouTubeUploadButton = ({ videoPath }) => {
 
   const handleUploadButtonClick = async () => {
     console.log('button clicked')
-    if (!accessToken) {
-      if (authorizationUrl) {
-        window.location.href = authorizationUrl;
-      } else {
-        console.error('Authorization URL not available');
-      }
-      return;
+    console.log('hasAccessToken is now: ' + hasAccessToken)
+    // console.log('aut url:' + authorizationUrl)
+      try {
+        if (!hasAccessToken && authorizationUrl) {
+          window.location.href = authorizationUrl
+        } 
+
+        console.log('attempting video upload')
+        const categoryName = 'category_name'; // Replace with the actual category name
+        const uploadResponse = await axios.post('/api/youtubeUploader', {
+          videoPath,
+          categoryName,
+        });
+  
+        if (uploadResponse.status === 200) {
+          console.log('Video uploaded successfully!');
+        } else {
+          console.error('Error uploading video');
+        }
+    } catch (error) {
+        console.error('Error uploading video:', error);
     }
-
-    try {
-      const categoryName = 'category_name'; // Replace with the actual category name
-      const uploadResponse = await axios.post('/api/youtubeUploader', {
-        videoPath,
-        categoryName,
-      });
-
-      if (uploadResponse.status === 200) {
-        console.log('Video uploaded successfully!');
-      } else {
-        console.error('Error uploading video');
-      }
-  } catch (error) {
-      console.error('Error uploading video:', error);
-  }
+    
 };
 
   return (

@@ -57,22 +57,22 @@ const GenerateButton = ({
       onVideoGenerated(videoUrl, videoPath)
       setIsVideoGenerated(true)
 
-      if (uploadToYoutube) {
-        const categoryName = 'category_name' // Replace with category name
-        const uploadResponse = await fetch('/api/youtubeUploader', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ videoPath, categoryName }),
-        })
+      // if (uploadToYoutube) {
+      //   const categoryName = 'category_name' // Replace with category name
+      //   const uploadResponse = await fetch('/api/youtubeUploader', {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //     },
+      //     body: JSON.stringify({ videoPath, categoryName }),
+      //   })
 
-        if (uploadResponse.ok) {
-          console.log('Video uploaded successfully!')
-        } else {
-          console.error('Error uploading video')
-        }
-      }
+      //   if (uploadResponse.ok) {
+      //     console.log('Video uploaded successfully!')
+      //   } else {
+      //     console.error('Error uploading video')
+      //   }
+      // }
     } catch (error) {
       console.error('Error generating video:', error)
     } finally {
