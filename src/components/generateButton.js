@@ -4,10 +4,10 @@ import gameInfo from '../../public/game_info.json' assert { type: 'json' }
 const GenerateButton = ({
   twitchCategory,
   clipCount,
-  uploadToYoutube,
   onVideoGenerated,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isVideoGenerated, setIsVideoGenerated] = useState(false)
   const videoPlayerRef = useRef(null)
 
   const getCategoryId = (categoryName) => {
@@ -51,33 +51,12 @@ const GenerateButton = ({
       const videoBlob = await editedVideoResponse.blob()
       const videoUrl = URL.createObjectURL(videoBlob)
 
-      // Set the video source for the video player
-      // if (videoPlayerRef.current) {
-      //   videoPlayerRef.current.src = videoUrl
-      // }
-
       // Get the videoPath from the response headers
       const videoPath = editedVideoResponse.headers.get('X-Video-Path')
 
       onVideoGenerated(videoUrl, videoPath)
+      setIsVideoGenerated(true)
 
-      // const { videoPath } = await editedVideoResponse.json()
-
-      // Upload the video to YouTube
-      // const categoryName = 'category_name' // Replace with category name
-      // const uploadResponse = await fetch('/api/youtubeUploader', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ videoPath, categoryName }),
-      // })
-
-      // if (uploadResponse.ok) {
-      //   console.log('Video uploaded successfully!')
-      // } else {
-      //   console.error('Error uploading video')
-      // }
       if (uploadToYoutube) {
         const categoryName = 'category_name' // Replace with category name
         const uploadResponse = await fetch('/api/youtubeUploader', {

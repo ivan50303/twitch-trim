@@ -7,15 +7,22 @@ const YOUTUBE_API_VERSION = 'v3'
 
 export default async function handler(req, res) {
   try {
-    const { videoPath, categoryName } = req.body
+    const { videoPath, categoryName} = req.body
 
     console.log('Uploading video to YouTube...')
 
     const oauth2Client = await getOAuth2Client()
+    console.log(oauth2Client)
+    // oauth2Client.setCredentials({access_token: accessToken})
     const youtube = google.youtube({
       version: YOUTUBE_API_VERSION,
       auth: oauth2Client,
     })
+    // try {
+      
+    // } catch (err) {
+    //   console.error('failed here: ' + err)
+    // }
 
     const videoFilePath = path.resolve(videoPath)
 
