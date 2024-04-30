@@ -1,21 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
 import gameInfo from '../../public/game_info.json' assert { type: 'json' }
 import axios from 'axios'
+import { useRouter } from 'next/router'
 
 const GenerateButton = ({
   twitchCategory,
   clipCount,
   uploadToYoutube,
   onVideoGenerated,
-  onAuthenticationComplete
 }) => {
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isDone, setIsDone] = useState(false)
   const [isVideoGenerated, setIsVideoGenerated] = useState(false)
   const [authorizationUrl, setAuthorizationUrl] = useState(null)
   const [hasAccessToken, setHasAccessToken] = useState(false)
-  const videoPlayerRef = useRef(null)
 
   useEffect(() => {
+    console.log('generate button rendered')
     fetchAuthorizationUrl()
   }, [])
 
@@ -31,10 +33,17 @@ const GenerateButton = ({
   useEffect(() => {
     const hasToken = localStorage.getItem('hasAccessToken')
     setHasAccessToken(hasToken === 'true')
-    if (hasToken === 'true') {
-      onAuthenticationComplete()
+  }, [])
+
+  useEffect(() => {
+    let timer;
+    if (isDone) {
+      timer = setTimeout(() => {
+        setIsDone(false);
+      }, 3000);
     }
-  }, [onAuthenticationComplete])
+    return () => clearTimeout(timer);
+  }, [isDone]);
 
   const getCategoryId = (categoryName) => {
     const category = gameInfo.find(
@@ -60,20 +69,20 @@ const GenerateButton = ({
       console.log('storing access token');
       const response = await axios.post('/api/storeAccessToken', { code: authorizationCode });
       if (response.status === 200) {
+        console.log('setting local storeage true')
         localStorage.setItem('hasAccessToken', 'true')
         setHasAccessToken(true)
+        window.location.href = '/'
       }
     } catch (error) {
       console.error('Error storing access token:', error);
     }
   };
 
-  const handleSignInToYoutube = () => {
-    window.location.href = authorizationUrl
-  }
-
   const handleGenerate = async () => {
+    console.log('run handle generate')
     setIsGenerating(true)
+    setIsDone(false)
     try {
       const categoryId = getCategoryId(twitchCategory)
       console.log(categoryId)
@@ -116,6 +125,9 @@ const GenerateButton = ({
           window.location.href = authorizationUrl
           return
         }
+          setIsGenerating(false)
+          setIsUploading(true)
+          
           const categoryName = 'category_name'; // Replace with category name
           const uploadResponse = await axios.post('/api/youtubeUploader', {
             videoPath,
@@ -126,52 +138,40 @@ const GenerateButton = ({
           } else {
             console.error('Error uploading video');
           }
+
+          setIsUploading(false)
+          setIsDone(true)
+      } else {
+        setIsGenerating(false)
+        setIsDone(true)
       }
-      // if (uploadToYoutube) {
-      //   if (!hasAccessToken && authorizationUrl) {
-      //     window.location.href = authorizationUrl;
-      //   } else {
-      //     const searchParams = new URLSearchParams(window.location.search);
-      //     const authorizationCode = searchParams.get('code');
-  
-      //     if (authorizationCode) {
-      //       try {
-      //         await axios.post('/api/storeAccessToken', { code: authorizationCode });
-      //         console.log('Access token stored successfully');
-  
-      //         const categoryName = 'category_name'; // Replace with category name
-      //         const uploadResponse = await axios.post('/api/youtubeUploader', {
-      //           videoPath,
-      //           categoryName,
-      //         });
-  
-      //         if (uploadResponse.status === 200) {
-      //           console.log('Video uploaded successfully!');
-      //         } else {
-      //           console.error('Error uploading video');
-      //         }
-      //       } catch (error) {
-      //         console.error('Error storing access token:', error);
-      //       }
-      //     } else {
-      //       console.log('No authorization code found');
-      //     }
-      //   }
-      // }
     } catch (error) {
+      setIsUploading(false)
       console.error('Error generating video:', error)
     } finally {
       setIsGenerating(false)
     }
   }
 
+  const getButtonLabel = () => {
+    if (isGenerating) {
+      return 'Generating video...'
+    } else if (isUploading) {
+      return 'Uploading video...'
+    } else if (isDone) {
+      return 'Done!'
+    } else {
+      return 'Generate'
+    }
+  }
+
+  const isFormFilled = twitchCategory.trim() !== '' && clipCount > 0
+  console.log("is form filled: " + isFormFilled)
+
   return (
     <div>
-      {!hasAccessToken &&  (
-    <button onClick={handleSignInToYoutube}>Sign in to YouTube</button>
-  )}
-    <button onClick={handleGenerate} disabled={isGenerating}>
-      {isGenerating ? 'Generating...' : 'Generate'}
+    <button onClick={handleGenerate} disabled={isGenerating || isUploading || isDone || !isFormFilled}>
+      {getButtonLabel()}
     </button>
     </div>
   )

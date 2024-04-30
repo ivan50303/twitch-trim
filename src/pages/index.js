@@ -1,7 +1,8 @@
 import GenerateButton from '@/components/generateButton'
 import VideoPlayer from '@/components/videoPlayer'
 import '../app/globals.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 
 const HomePage = () => {
   const [twitchCategory, setTwitchCategory] = useState('')
@@ -11,6 +12,20 @@ const HomePage = () => {
   const [videoPath, setVideoPath] = useState(null)
   const [isVideoGenerated, setIsVideoGenerated] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authorizationUrl, setAuthorizationUrl] = useState(null)
+  const [hasAccessToken, setHasAccessToken] = useState(false)
+
+  useEffect(() => {
+    fetchAuthorizationUrl()
+    checkAccessToken()
+    console.log(isAuthenticated)
+  }, [])
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('hasAccessToken')
+    setHasAccessToken(accessToken === 'true')
+    console.log('hasAcceasToken is: ' + hasAccessToken)
+  }, [])
 
   const handleTwitchCategoryChange = (e) => {
     setTwitchCategory(e.target.value)
@@ -31,9 +46,51 @@ const HomePage = () => {
     setIsVideoGenerated(true)
   }
 
-  const handleAuthenticationComplete = () => {
-    setIsAuthenticated(true)
+  const fetchAuthorizationUrl = async () => {
+    try {
+      const response = await axios.get('/api/checkAccessToken');
+      setAuthorizationUrl(response.data.authorizationUrl);
+    } catch (error) {
+      console.error('Error fetching authorization URL:', error);
+    }
+  };
+
+  const checkAccessToken = async () => {
+    const response = await axios.get('api/checkAccessToken')
+    setIsAuthenticated(response.data.hasAccessToken)
+    localStorage.setItem('hasAccessToken', response.data.hasAccessToken.toString())
+  };
+
+  const handleSignInYoutube = () => {
+    window.location.href = authorizationUrl
   }
+
+  const getHasAccessToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hasAccessToken') === 'true';
+    }
+    return false;
+  };
+
+  const renderAuthButton = () => {
+    const hasAccessToken = getHasAccessToken();
+
+    if (hasAccessToken) {
+      return (
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={uploadToYoutube}
+            onChange={handleUploadToYoutubeChange}
+            className="mr-2"
+          />
+          <label>Upload to YouTube?</label>
+        </div>
+      );
+    } else {
+      return <button onClick={handleSignInYoutube}>Sign in to YouTube</button>;
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -57,25 +114,26 @@ const HomePage = () => {
         max="20"
         className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />    
-        {isAuthenticated && ( 
+        
+      {hasAccessToken ? (
         <div className="flex items-center">
-              <input
-              type='checkbox'
-              checked={uploadToYoutube}
-              onChange={handleUploadToYoutubeChange}
-              className='mr-2'
-               />
-               <label>Upload to YouTube?</label>
-            </div>
-        )} 
-
+        <input
+          type="checkbox"
+          checked={uploadToYoutube}
+          onChange={handleUploadToYoutubeChange}
+          className="mr-2"
+        />
+        <label>Upload to YouTube?</label>
+      </div>
+      ) : (
+        <button onClick={handleSignInYoutube}>Sign in to YouTube</button>
+      )}
       <div className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-8">
         <GenerateButton
           twitchCategory={twitchCategory}
           clipCount={clipCount}
           uploadToYoutube={uploadToYoutube}
           onVideoGenerated={handleVideoGenerated}
-          onAuthenticationComplete={handleAuthenticationComplete}
         />
       </div>
 
