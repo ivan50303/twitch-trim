@@ -1,16 +1,16 @@
 import GenerateButton from '@/components/generateButton'
 import VideoPlayer from '@/components/videoPlayer'
-import YouTubeUploadButton from '@/components/youtubeUploadButton'
 import '../app/globals.css'
 import { useState } from 'react'
 
 const HomePage = () => {
   const [twitchCategory, setTwitchCategory] = useState('')
   const [clipCount, setClipCount] = useState('')
-  // const [uploadToYoutube, setUploadToYoutube] = useState(false)
+  const [uploadToYoutube, setUploadToYoutube] = useState(false)
   const [videoSource, setVideoSource] = useState(null)
   const [videoPath, setVideoPath] = useState(null)
   const [isVideoGenerated, setIsVideoGenerated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const handleTwitchCategoryChange = (e) => {
     setTwitchCategory(e.target.value)
@@ -29,6 +29,10 @@ const HomePage = () => {
     setVideoSource(videoUrl)
     setVideoPath(videoPath)
     setIsVideoGenerated(true)
+  }
+
+  const handleAuthenticationComplete = () => {
+    setIsAuthenticated(true)
   }
 
   return (
@@ -52,28 +56,26 @@ const HomePage = () => {
         min="1"
         max="20"
         className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      
-        {/* <input
-          type="checkbox"
-          checked={uploadToYoutube}
-          onChange={handleUploadToYoutubeChange}
-          className="mr-2"
-        />
-        <label>Upload to YouTube?</label> */}
-        {/* {isVideoGenerated && (
-            
-        )} */}
+      />    
+        {isAuthenticated && ( 
         <div className="flex items-center">
-              <YouTubeUploadButton videoPath={videoPath} />
+              <input
+              type='checkbox'
+              checked={uploadToYoutube}
+              onChange={handleUploadToYoutubeChange}
+              className='mr-2'
+               />
+               <label>Upload to YouTube?</label>
             </div>
-        
+        )} 
 
       <div className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-8">
         <GenerateButton
           twitchCategory={twitchCategory}
           clipCount={clipCount}
+          uploadToYoutube={uploadToYoutube}
           onVideoGenerated={handleVideoGenerated}
+          onAuthenticationComplete={handleAuthenticationComplete}
         />
       </div>
 

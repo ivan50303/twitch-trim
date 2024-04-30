@@ -1,14 +1,40 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import gameInfo from '../../public/game_info.json' assert { type: 'json' }
+import axios from 'axios'
 
 const GenerateButton = ({
   twitchCategory,
   clipCount,
+  uploadToYoutube,
   onVideoGenerated,
+  onAuthenticationComplete
 }) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isVideoGenerated, setIsVideoGenerated] = useState(false)
+  const [authorizationUrl, setAuthorizationUrl] = useState(null)
+  const [hasAccessToken, setHasAccessToken] = useState(false)
   const videoPlayerRef = useRef(null)
+
+  useEffect(() => {
+    fetchAuthorizationUrl()
+  }, [])
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const authorizationCode = searchParams.get('code')
+    
+    if (authorizationCode) {
+      fetchAccessToken(authorizationCode)
+    }
+  }, [])
+
+  useEffect(() => {
+    const hasToken = localStorage.getItem('hasAccessToken')
+    setHasAccessToken(hasToken === 'true')
+    if (hasToken === 'true') {
+      onAuthenticationComplete()
+    }
+  }, [onAuthenticationComplete])
 
   const getCategoryId = (categoryName) => {
     const category = gameInfo.find(
@@ -17,9 +43,37 @@ const GenerateButton = ({
     return category ? category.id : null
   }
 
+  const fetchAuthorizationUrl = async () => {
+    try {
+      console.log('fetching auth url');
+      const response = await axios.get('/api/checkAccessToken');
+      console.log(response);
+      setHasAccessToken(response.data.hasAccessToken);
+      setAuthorizationUrl(response.data.authorizationUrl);
+    } catch (error) {
+      console.error('Error fetching authorization URL:', error);
+    }
+  };
+
+  const fetchAccessToken = async (authorizationCode) => {
+    try {
+      console.log('storing access token');
+      const response = await axios.post('/api/storeAccessToken', { code: authorizationCode });
+      if (response.status === 200) {
+        localStorage.setItem('hasAccessToken', 'true')
+        setHasAccessToken(true)
+      }
+    } catch (error) {
+      console.error('Error storing access token:', error);
+    }
+  };
+
+  const handleSignInToYoutube = () => {
+    window.location.href = authorizationUrl
+  }
+
   const handleGenerate = async () => {
     setIsGenerating(true)
-
     try {
       const categoryId = getCategoryId(twitchCategory)
       console.log(categoryId)
@@ -57,20 +111,51 @@ const GenerateButton = ({
       onVideoGenerated(videoUrl, videoPath)
       setIsVideoGenerated(true)
 
+      if (uploadToYoutube) {
+        if (!hasAccessToken) {
+          window.location.href = authorizationUrl
+          return
+        }
+          const categoryName = 'category_name'; // Replace with category name
+          const uploadResponse = await axios.post('/api/youtubeUploader', {
+            videoPath,
+            categoryName,
+          });
+          if (uploadResponse.status === 200) {
+            console.log('Video uploaded successfully!');
+          } else {
+            console.error('Error uploading video');
+          }
+      }
       // if (uploadToYoutube) {
-      //   const categoryName = 'category_name' // Replace with category name
-      //   const uploadResponse = await fetch('/api/youtubeUploader', {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //     },
-      //     body: JSON.stringify({ videoPath, categoryName }),
-      //   })
-
-      //   if (uploadResponse.ok) {
-      //     console.log('Video uploaded successfully!')
+      //   if (!hasAccessToken && authorizationUrl) {
+      //     window.location.href = authorizationUrl;
       //   } else {
-      //     console.error('Error uploading video')
+      //     const searchParams = new URLSearchParams(window.location.search);
+      //     const authorizationCode = searchParams.get('code');
+  
+      //     if (authorizationCode) {
+      //       try {
+      //         await axios.post('/api/storeAccessToken', { code: authorizationCode });
+      //         console.log('Access token stored successfully');
+  
+      //         const categoryName = 'category_name'; // Replace with category name
+      //         const uploadResponse = await axios.post('/api/youtubeUploader', {
+      //           videoPath,
+      //           categoryName,
+      //         });
+  
+      //         if (uploadResponse.status === 200) {
+      //           console.log('Video uploaded successfully!');
+      //         } else {
+      //           console.error('Error uploading video');
+      //         }
+      //       } catch (error) {
+      //         console.error('Error storing access token:', error);
+      //       }
+      //     } else {
+      //       console.log('No authorization code found');
+      //     }
       //   }
       // }
     } catch (error) {
@@ -81,9 +166,14 @@ const GenerateButton = ({
   }
 
   return (
+    <div>
+      {!hasAccessToken &&  (
+    <button onClick={handleSignInToYoutube}>Sign in to YouTube</button>
+  )}
     <button onClick={handleGenerate} disabled={isGenerating}>
       {isGenerating ? 'Generating...' : 'Generate'}
     </button>
+    </div>
   )
 }
 
