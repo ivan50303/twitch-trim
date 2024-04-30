@@ -10,6 +10,7 @@ export default async function handler(req, res) {
     const { videoPath, categoryName} = req.body
 
     console.log('Uploading video to YouTube...')
+    console.log (categoryName)
 
     const oauth2Client = await getOAuth2Client()
   

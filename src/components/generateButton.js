@@ -50,6 +50,13 @@ const GenerateButton = ({
     return category ? category.id : null
   }
 
+  const getCategoryName = (categoryName) => {
+    const category = gameInfo.find(
+      (game) => game.name.toLowerCase() === categoryName.toLowerCase().trim()
+    )
+    return category ? category.name : null
+  }
+
   const fetchAuthorizationUrl = async () => {
     try {
       const response = await axios.get('/api/checkAccessToken');
@@ -81,7 +88,7 @@ const GenerateButton = ({
       if (!categoryId) {
         console.error('Invalid Twitch category')
         return
-      }
+      }      
 
       const twitchClipsResponse = await fetch('/api/twitchFetcher', {
         method: 'POST',
@@ -116,7 +123,7 @@ const GenerateButton = ({
           setIsGenerating(false)
           setIsUploading(true)
           
-          const categoryName = 'category_name'; // Replace with category name
+          const categoryName = getCategoryName(twitchCategory)
           const uploadResponse = await axios.post('/api/youtubeUploader', {
             videoPath,
             categoryName,
