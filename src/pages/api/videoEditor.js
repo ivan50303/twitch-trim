@@ -12,27 +12,20 @@ export default async function handler(req, res) {
 
     const outputVideoPath = await createVideoFromClips(data)
 
-    // Set response headers
     res.setHeader('Content-Type', 'video/mp4')
     res.setHeader(
       'Content-Disposition',
       `attachment; filename="${path.basename(outputVideoPath)}"`
     )
-    res.setHeader('X-Video-Path', outputVideoPath) // include videoPath in response headers
+    res.setHeader('X-Video-Path', outputVideoPath)
 
     const videoStream = fs.createReadStream(outputVideoPath)
 
-    // Pipe the video stream to the response
     videoStream.pipe(res)
   } catch (error) {
     console.error('Error creating video:', error)
     res.status(500).json({ error: 'Failed to create video' })
   }
-  //   res.status(200).json({ videoPath: outputVideoPath })
-  // } catch (error) {
-  //   console.error('Error creating video:', error)
-  //   res.status(500).json({ error: 'Failed to create video' })
-  // }
 }
 
 async function createVideoFromClips(clips) {

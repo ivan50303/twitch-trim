@@ -11,20 +11,17 @@ const HomePage = () => {
   const [videoSource, setVideoSource] = useState(null)
   const [videoPath, setVideoPath] = useState(null)
   const [isVideoGenerated, setIsVideoGenerated] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [authorizationUrl, setAuthorizationUrl] = useState(null)
   const [hasAccessToken, setHasAccessToken] = useState(false)
 
   useEffect(() => {
     fetchAuthorizationUrl()
     checkAccessToken()
-    console.log(isAuthenticated)
   }, [])
 
   useEffect(() => {
     const accessToken = localStorage.getItem('hasAccessToken')
     setHasAccessToken(accessToken === 'true')
-    console.log('hasAcceasToken is: ' + hasAccessToken)
   }, [])
 
   const handleTwitchCategoryChange = (e) => {
@@ -57,40 +54,12 @@ const HomePage = () => {
 
   const checkAccessToken = async () => {
     const response = await axios.get('api/checkAccessToken')
-    setIsAuthenticated(response.data.hasAccessToken)
     localStorage.setItem('hasAccessToken', response.data.hasAccessToken.toString())
   };
 
   const handleSignInYoutube = () => {
     window.location.href = authorizationUrl
   }
-
-  const getHasAccessToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('hasAccessToken') === 'true';
-    }
-    return false;
-  };
-
-  const renderAuthButton = () => {
-    const hasAccessToken = getHasAccessToken();
-
-    if (hasAccessToken) {
-      return (
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={uploadToYoutube}
-            onChange={handleUploadToYoutubeChange}
-            className="mr-2"
-          />
-          <label>Upload to YouTube?</label>
-        </div>
-      );
-    } else {
-      return <button onClick={handleSignInYoutube}>Sign in to YouTube</button>;
-    }
-  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -106,12 +75,12 @@ const HomePage = () => {
         className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <input
-        type="number"
+        type="text"
         placeholder="Number of Clips"
         value={clipCount}
         onChange={handleClipCountChange}
         min="1"
-        max="20"
+        max="10"
         className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />    
         

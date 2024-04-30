@@ -12,20 +12,13 @@ export default async function handler(req, res) {
     console.log('Uploading video to YouTube...')
 
     const oauth2Client = await getOAuth2Client()
-    // console.log(oauth2Client)
-    // oauth2Client.setCredentials({access_token: accessToken})
+  
     const youtube = google.youtube({
       version: YOUTUBE_API_VERSION,
       auth: oauth2Client,
     })
-    // try {
-      
-    // } catch (err) {
-    //   console.error('failed here: ' + err)
-    // }
 
     const videoFilePath = path.resolve(videoPath)
-
     const videoMetadata = {
       snippet: {
         title: `Top Twitch Clips of the Week - ${categoryName}`,

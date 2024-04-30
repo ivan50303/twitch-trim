@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import gameInfo from '../../public/game_info.json' assert { type: 'json' }
 import axios from 'axios'
-import { useRouter } from 'next/router'
 
 const GenerateButton = ({
   twitchCategory,
@@ -17,7 +16,6 @@ const GenerateButton = ({
   const [hasAccessToken, setHasAccessToken] = useState(false)
 
   useEffect(() => {
-    console.log('generate button rendered')
     fetchAuthorizationUrl()
   }, [])
 
@@ -54,9 +52,7 @@ const GenerateButton = ({
 
   const fetchAuthorizationUrl = async () => {
     try {
-      console.log('fetching auth url');
       const response = await axios.get('/api/checkAccessToken');
-      console.log(response);
       setHasAccessToken(response.data.hasAccessToken);
       setAuthorizationUrl(response.data.authorizationUrl);
     } catch (error) {
@@ -66,10 +62,8 @@ const GenerateButton = ({
 
   const fetchAccessToken = async (authorizationCode) => {
     try {
-      console.log('storing access token');
       const response = await axios.post('/api/storeAccessToken', { code: authorizationCode });
       if (response.status === 200) {
-        console.log('setting local storeage true')
         localStorage.setItem('hasAccessToken', 'true')
         setHasAccessToken(true)
         window.location.href = '/'
@@ -80,18 +74,15 @@ const GenerateButton = ({
   };
 
   const handleGenerate = async () => {
-    console.log('run handle generate')
     setIsGenerating(true)
     setIsDone(false)
     try {
       const categoryId = getCategoryId(twitchCategory)
-      console.log(categoryId)
       if (!categoryId) {
         console.error('Invalid Twitch category')
         return
       }
 
-      // Fetch clips from Twitch
       const twitchClipsResponse = await fetch('/api/twitchFetcher', {
         method: 'POST',
         headers: {
@@ -101,7 +92,6 @@ const GenerateButton = ({
       })
       const twitchClips = await twitchClipsResponse.json()
 
-      // Edit the clips into a video
       const editedVideoResponse = await fetch('/api/videoEditor', {
         method: 'POST',
         headers: {
@@ -110,11 +100,9 @@ const GenerateButton = ({
         body: JSON.stringify({ data: twitchClips }),
       })
 
-      // Get the generated video file
       const videoBlob = await editedVideoResponse.blob()
       const videoUrl = URL.createObjectURL(videoBlob)
 
-      // Get the videoPath from the response headers
       const videoPath = editedVideoResponse.headers.get('X-Video-Path')
 
       onVideoGenerated(videoUrl, videoPath)
@@ -166,7 +154,6 @@ const GenerateButton = ({
   }
 
   const isFormFilled = twitchCategory.trim() !== '' && clipCount > 0
-  console.log("is form filled: " + isFormFilled)
 
   return (
     <div>

@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       twitch: { clientId, accessToken, clipSettings },
     } = config
 
-    const { count, category, startDate, endDate } = clipSettings
+    const { startDate, endDate } = clipSettings
 
     const startDateString = startDate.toISOString().split('T')[0]
     const endDateString = endDate.toISOString().split('T')[0]
