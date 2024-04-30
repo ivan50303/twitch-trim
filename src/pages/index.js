@@ -29,7 +29,7 @@ const HomePage = () => {
   }
 
   const handleClipCountChange = (e) => {
-    const count = Math.min(parseInt(e.target.value, 10) || 0, 20)
+    const count = Math.min(parseInt(e.target.value, 10) || 1, 10)
     setClipCount(count)
   }
 

@@ -46,6 +46,7 @@ async function createVideoFromClips(clips) {
   fs.closeSync(fs.openSync(inputFileListPath, 'w'))
 
   const clipPaths = await downloadAndSaveClips(data, tempDir)
+  const preprocessedClipPaths = await preprocessClips(clipPaths, tempDir)
   const inputFileListStats = fs.statSync(inputFileListPath)
   const hasInputContent = inputFileListStats.size > 0
 
@@ -53,7 +54,7 @@ async function createVideoFromClips(clips) {
   if (hasInputContent) {
     fs.truncateSync(inputFileListPath)
   } else {
-    inputFileList = clipPaths
+    inputFileList = preprocessedClipPaths
       .map((clipPath) => {
         return `file '${clipPath}'`
       })
@@ -67,7 +68,9 @@ async function createVideoFromClips(clips) {
   }
 
   const ffmpegPath = process.env.FFMPEG_EXE_PATH
+  // const ffmpegCommand = `${ffmpegPath} -v verbose -f concat -safe 0 -i ${inputFileListPath} -vf "scale=1920:1080:force_original_aspect_ratio=decrease,fps=30" ${outputVideoPath}`
   const ffmpegCommand = `${ffmpegPath} -f concat -safe 0 -i ${inputFileListPath} -c copy ${outputVideoPath}`
+  // const ffmpegCommand = `${ffmpegPath} -f concat -safe 0 -i ${inputFileListPath} -c:v libx264 -r 30 -c:a aac ${outputVideoPath}`;
 
   return new Promise((resolve, reject) => {
     const ffmpegProcess = spawn(ffmpegCommand, { shell: true })
@@ -131,4 +134,30 @@ async function downloadAndSaveClips(data, tempDir) {
   }
 
   return clipPaths
+}
+
+async function preprocessClips(clipPaths, tempDir) {
+  const preprocessedClipPaths = []
+
+  for (const clipPath of clipPaths) {
+    const preprocessedClipPath = path.join(tempDir, `preprocessed_${path.basename(clipPath)}`)
+
+    const ffmpegPath = process.env.FFMPEG_EXE_PATH
+    const ffmpegCommand = `${ffmpegPath} -i ${clipPath} -c:v libx264 -preset ultrafast -pix_fmt yuv420p -vf scale=1280:720,setsar=1,fps=30 -c:a aac -ar 44100 -ac 2 ${preprocessedClipPath}`
+
+    await new Promise((resolve, reject) => {
+      const ffmpegProcess = spawn(ffmpegCommand, { shell: true })
+
+      ffmpegProcess.on('close', (code) => {
+        if (code === 0) {
+          preprocessedClipPaths.push(preprocessedClipPath)
+          resolve()
+        } else {
+          reject(new Error(`FFmpeg preprocessing failed for clip ${clipPath}`))
+        }
+      })
+    })
+  }
+
+  return preprocessedClipPaths
 }
