@@ -7,18 +7,19 @@ const YOUTUBE_API_VERSION = 'v3'
 
 export default async function handler(req, res) {
   try {
-    const { videoPath, categoryName } = req.body
+    const { videoPath, categoryName} = req.body
 
     console.log('Uploading video to YouTube...')
+    console.log (categoryName)
 
     const oauth2Client = await getOAuth2Client()
+  
     const youtube = google.youtube({
       version: YOUTUBE_API_VERSION,
       auth: oauth2Client,
     })
 
     const videoFilePath = path.resolve(videoPath)
-
     const videoMetadata = {
       snippet: {
         title: `Top Twitch Clips of the Week - ${categoryName}`,

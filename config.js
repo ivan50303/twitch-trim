@@ -7,18 +7,10 @@ const config = {
     clientId: process.env.TWITCH_CLIENT_ID,
     accessToken: process.env.TWITCH_ACCESS_TOKEN,
     clipSettings: {
-      count: 2,
-      category: {
-        id: '509658',
-        name: 'Just Chatting',
-      },
       broadcasterId: '',
       startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
       endDate: new Date(),
     },
-  },
-  youtube: {
-  
   },
 }
 
